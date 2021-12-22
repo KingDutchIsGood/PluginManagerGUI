@@ -1,5 +1,7 @@
 package me.kingdutchisbad.spigotmc.pluginmanagergui;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,6 +18,11 @@ import org.ipvp.canvas.type.ChestMenu;
 
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
+
+
+/*
+All of this code is just proof of concept and written very badly
+ */
 
 public class InventoryTestClass implements CommandExecutor
 {
@@ -36,63 +43,75 @@ public class InventoryTestClass implements CommandExecutor
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
         if (!(sender instanceof Player)) return false;
-
+        if (args.length == 0 )  return false;
         Player player = ((Player) sender).getPlayer();
-        Menu menu = createMenu();
-        Slot slot = menu.getSlot(12);
-        ItemStack itemStack = new ItemStack(Material.GREEN_WOOL);
-        ItemMeta itemMeta = itemStack.getItemMeta();
+        MainMenu mainMenu = new MainMenu();
+        Menu menu = mainMenu.createMenu();
+        int i = 10;
+
+        for(Plugin plugin : Bukkit.getPluginManager().getPlugins())
+        {
+          Slot  slot = menu.getSlot(i);
+          AtomicReference<Boolean> isOn = new AtomicReference<Boolean>(plugin.getServer().getPluginManager().isPluginEnabled(plugin));
+          ItemStack  itemStack = new ItemStack(Material.GREEN_WOOL);
+          ItemMeta  itemMeta = itemStack.getItemMeta();
+          itemMeta.setDisplayName(plugin.getName());
+          itemMeta.setLore(Collections.singletonList(plugin.getDescription().getFullName().toString()));
+          itemStack.setItemMeta(itemMeta);
+          slot.setItem(itemStack);
+          i++;
+          mainMenu.addWhiteBorder(menu);
+          mainMenu.displayMenu(player, menu);
+          menu.update();
+          slot.setClickHandler((playerThing, info) -> {
+                /* Creates a menu and checks if plugin is on or not (Todo) */
+                PluginOptionsMenu pluginOptionsMenu = new PluginOptionsMenu();
+                Menu menu1 = pluginOptionsMenu.createMenu(plugin.getDescription().getDescription() , true);
+                Slot slot1 = menu1.getSlot(11);
+                ItemStack woolOn = new ItemStack(Material.GREEN_WOOL);
+                ItemStack woolOff = new ItemStack(Material.RED_WOOL);
+                ItemMeta woolOnItemMeta = woolOn.getItemMeta();
+                ItemMeta woolOffItemMeta = woolOff.getItemMeta();
+
+                woolOnItemMeta.setDisplayName(ChatColor.GREEN+plugin.getName());
+                woolOn.setItemMeta(woolOnItemMeta);
+
+                woolOffItemMeta.setDisplayName(ChatColor.RED+plugin.getName());
+                woolOff.setItemMeta(woolOffItemMeta);
+                pluginOptionsMenu.addBorder(menu1, isOn.get());
+                if(isOn.get())
+                {
+                    slot1.setItem(woolOn);
+                } else
+                {
+                    slot1.setItem(woolOff);
+                }
+                pluginOptionsMenu.displayMenu(playerThing, menu1);
+                slot1.setClickHandler((playerThing2, info2) ->
+                {
+                    if(isOn.get())
+                    {
+                        plugin.getPluginLoader().disablePlugin(plugin);
+                        slot1.setItem(woolOff);
+                        isOn.set(false);
+                        pluginOptionsMenu.addBorder(menu1, isOn.get());
+                        playerThing2.sendMessage(ChatColor.RED+"PluginManager: Disabled plugin " + plugin.getName());
+
+                    }else
+                    {
+                        plugin.getPluginLoader().enablePlugin(plugin);
+                        slot1.setItem(woolOn);
+                        isOn.set(true);
+                        pluginOptionsMenu.addBorder(menu1, isOn.get());
+                        playerThing2.sendMessage(ChatColor.GREEN+"PluginManager: Enabled plugin " + plugin.getName());
+                    }
+                    menu1.update();
+                });
+            });
+        }
+
         // Testing
-        assert itemMeta != null;
-        Plugin pluginJAR = new GetPlugin (args[0]).getPluginJAR();
-        itemMeta.setDisplayName(pluginJAR.getName());
-        itemMeta.setLore(Collections.singletonList(pluginJAR.getDescription().getFullName().toString()));
-        itemStack.setItemMeta(itemMeta);
-        slot.setItem(itemStack);
-        addWhiteBorder(menu);
-        displayMenu(player, menu);
-        menu.update();
-        AtomicReference<Boolean> isOn = new AtomicReference<>(true);
-        slot.setClickHandler((playerThing, info) -> {
-            playerThing.sendMessage("You clicked the slot at index " + info.getClickedSlot().getIndex());
-            pluginJAR.getPluginLoader().disablePlugin(pluginJAR);
-            if(isOn.get())
-            {
-                playerThing.sendMessage("Disabled Plugin");
-                isOn.set(false);
-            }
-            else
-            {
-                pluginJAR.getPluginLoader().enablePlugin(pluginJAR);
-                playerThing.sendMessage("Enabled Plugin");
-                isOn.set(true);
-            }
-        });
+
         return true;
     }
-
-    public Menu createMenu()
-    {
-        return ChestMenu.builder(4)
-                .title("All the plugins you have currently")
-                .build();
-    }
-
-    public void displayMenu(Player player, Menu menu)
-    {
-
-        menu.open(player);
-    }
-
-    public void addWhiteBorder(Menu menu)
-    {
-        Mask mask = BinaryMask.builder(menu)
-                .item(new ItemStack(Material.BLACK_STAINED_GLASS_PANE))
-                .pattern("111111111") // First row
-                .pattern("100000001") // Second row
-                .pattern("100000001") // Third row
-                .pattern("111111111").build(); // Forth row
-        mask.apply(menu);
-    }
-
 }

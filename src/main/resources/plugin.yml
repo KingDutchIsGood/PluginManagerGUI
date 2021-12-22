@@ -7,4 +7,4 @@ description: A Plugin Manager GUI
 commands:
   inventorytest:
     description: Your description
-    usage: /<command>
+    usage: 'Usage: /<command> {insert plugin name here}'
