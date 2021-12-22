@@ -1,0 +1,10 @@
+name: PluginManagerGUI
+version: '1.0-SNAPSHOT'
+main: me.kingdutchisbad.spigotmc.pluginmanagergui.PluginManagerGUI
+api-version: 1.18
+authors: [ KingDutchIsBad ]
+description: A Plugin Manager GUI
+commands:
+  inventorytest:
+    description: Your description
+    usage: /<command>
