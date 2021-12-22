@@ -12,7 +12,7 @@ public class MainMenu
 {
     public Menu createMenu()
     {
-        return ChestMenu.builder(4)
+        return ChestMenu.builder(6)
                 .title("All the plugins you have currently")
                 .build();
     }
@@ -29,7 +29,9 @@ public class MainMenu
                 .pattern("111111111") // First row
                 .pattern("100000001") // Second row
                 .pattern("100000001") // Third row
-                .pattern("111111111").build(); // Forth row
+                .pattern("100000001") // Forth row
+                .pattern("100000001") // Fifth row
+                .pattern("111111111").build(); // Sixth row
         mask.apply(menu);
     }
 }

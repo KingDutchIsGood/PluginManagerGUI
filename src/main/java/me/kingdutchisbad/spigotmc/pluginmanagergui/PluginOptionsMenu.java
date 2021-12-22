@@ -13,7 +13,7 @@ public class PluginOptionsMenu
 {
     public Menu createMenu(String pluginName, Boolean isOn)
     {
-            return ChestMenu.builder(4)
+            return ChestMenu.builder(6)
                     .title(ChatColor.BLACK + pluginName)
                     .build();
     }
@@ -33,7 +33,9 @@ public class PluginOptionsMenu
                     .pattern("111111111") // First row
                     .pattern("100000001") // Second row
                     .pattern("100000001") // Third row
-                    .pattern("111111111").build(); //Forth Row
+                    .pattern("100000001") // Forth row
+                    .pattern("100000001") // Fifth row
+                    .pattern("111111111").build(); //Sixth Row
         }else
         {
             mask = BinaryMask.builder(menu)
@@ -41,7 +43,9 @@ public class PluginOptionsMenu
                     .pattern("111111111") // First row
                     .pattern("100000001") // Second row
                     .pattern("100000001") // Third row
-                    .pattern("111111111").build(); //Forth row
+                    .pattern("100000001") // Forth row
+                    .pattern("100000001") // Fifth row
+                    .pattern("111111111").build(); //Sixth Row
         }
         mask.apply(menu);
     }

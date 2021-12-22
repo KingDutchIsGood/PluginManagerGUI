@@ -67,7 +67,7 @@ public class InventoryTestClass implements CommandExecutor
                 /* Creates a menu and checks if plugin is on or not (Todo) */
                 PluginOptionsMenu pluginOptionsMenu = new PluginOptionsMenu();
                 Menu menu1 = pluginOptionsMenu.createMenu(plugin.getDescription().getDescription() , true);
-                Slot slot1 = menu1.getSlot(11);
+                Slot slot1 = menu1.getSlot(10);
                 ItemStack woolOn = new ItemStack(Material.GREEN_WOOL);
                 ItemStack woolOff = new ItemStack(Material.RED_WOOL);
                 ItemMeta woolOnItemMeta = woolOn.getItemMeta();
@@ -87,6 +87,21 @@ public class InventoryTestClass implements CommandExecutor
                     slot1.setItem(woolOff);
                 }
                 pluginOptionsMenu.displayMenu(playerThing, menu1);
+
+
+                Slot slotForBack = menu1.getSlot(43);
+                ItemStack itemStack1 = new ItemStack(Material.BARRIER);
+                ItemMeta itemMeta1 = itemStack1.getItemMeta();
+                itemMeta1.setDisplayName(ChatColor.RED+"Back");
+                itemStack1.setItemMeta(itemMeta1);
+                slotForBack.setItem(itemStack1);
+                menu1.update();
+              slotForBack.setClickHandler(((player1, clickInformation) ->
+                {
+                    mainMenu.displayMenu(player1 , menu);
+                }));
+
+
                 slot1.setClickHandler((playerThing2, info2) ->
                 {
                     if(isOn.get())
