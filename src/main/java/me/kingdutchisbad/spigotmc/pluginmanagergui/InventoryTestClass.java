@@ -6,7 +6,9 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -16,7 +18,11 @@ import org.ipvp.canvas.mask.Mask;
 import org.ipvp.canvas.slot.Slot;
 import org.ipvp.canvas.type.ChestMenu;
 
-import java.util.Collections;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -43,7 +49,6 @@ public class InventoryTestClass implements CommandExecutor
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
     {
         if (!(sender instanceof Player)) return false;
-        if (args.length == 0 )  return false;
         Player player = ((Player) sender).getPlayer();
         MainMenu mainMenu = new MainMenu();
         Menu menu = mainMenu.createMenu();
@@ -65,62 +70,108 @@ public class InventoryTestClass implements CommandExecutor
           menu.update();
           slot.setClickHandler((playerThing, info) -> {
                 /* Creates a menu and checks if plugin is on or not (Todo) */
+
+
+
                 PluginOptionsMenu pluginOptionsMenu = new PluginOptionsMenu();
-                Menu menu1 = pluginOptionsMenu.createMenu(plugin.getDescription().getDescription() , true);
-                Slot slot1 = menu1.getSlot(10);
+                Menu pluginOptionSubMenu = pluginOptionsMenu.createMenu(plugin.getDescription().getDescription() , true);
+                Slot slotPluginOptionsSubMenu = pluginOptionSubMenu.getSlot(10);
                 ItemStack woolOn = new ItemStack(Material.GREEN_WOOL);
                 ItemStack woolOff = new ItemStack(Material.RED_WOOL);
                 ItemMeta woolOnItemMeta = woolOn.getItemMeta();
                 ItemMeta woolOffItemMeta = woolOff.getItemMeta();
-
                 woolOnItemMeta.setDisplayName(ChatColor.GREEN+plugin.getName());
                 woolOn.setItemMeta(woolOnItemMeta);
 
                 woolOffItemMeta.setDisplayName(ChatColor.RED+plugin.getName());
                 woolOff.setItemMeta(woolOffItemMeta);
-                pluginOptionsMenu.addBorder(menu1, isOn.get());
+
+                Slot slotForBack = pluginOptionSubMenu.getSlot(43);
+                ItemStack slotForBackItemStack = new ItemStack(Material.BARRIER);
+                ItemMeta slotForBackItemMeta = slotForBackItemStack.getItemMeta();
+                slotForBackItemMeta.setDisplayName(ChatColor.RED+"Back");
+                slotForBackItemStack.setItemMeta(slotForBackItemMeta);
+                slotForBack.setItem(slotForBackItemStack);
+
+                Slot slotToSeeConfig = pluginOptionSubMenu.getSlot(11);
+                ItemStack slotToSeeConfigItemStack = new ItemStack(Material.PAPER);
+                ItemMeta slotToSeeConfigItemMeta = slotToSeeConfigItemStack.getItemMeta();
+                slotToSeeConfigItemMeta.setDisplayName("Access Config");
+                slotToSeeConfigItemStack.setItemMeta(slotToSeeConfigItemMeta);
+                slotToSeeConfig.setItem(slotToSeeConfigItemStack);
+
+                pluginOptionsMenu.addBorder(pluginOptionSubMenu, isOn.get());
+
                 if(isOn.get())
                 {
-                    slot1.setItem(woolOn);
+                    slotPluginOptionsSubMenu.setItem(woolOn);
                 } else
                 {
-                    slot1.setItem(woolOff);
+                    slotPluginOptionsSubMenu.setItem(woolOff);
                 }
-                pluginOptionsMenu.displayMenu(playerThing, menu1);
 
+                pluginOptionsMenu.displayMenu(playerThing, pluginOptionSubMenu);
+                pluginOptionSubMenu.update();
 
-                Slot slotForBack = menu1.getSlot(43);
-                ItemStack itemStack1 = new ItemStack(Material.BARRIER);
-                ItemMeta itemMeta1 = itemStack1.getItemMeta();
-                itemMeta1.setDisplayName(ChatColor.RED+"Back");
-                itemStack1.setItemMeta(itemMeta1);
-                slotForBack.setItem(itemStack1);
-                menu1.update();
-              slotForBack.setClickHandler(((player1, clickInformation) ->
+                slotToSeeConfig.setClickHandler((playerSlotToSeeConfig, slotToSeeConfigInformation) ->
+                {
+                    MenuYML menuYML = new MenuYML();
+                    Menu actualMenuYML = menuYML.createMenu(plugin.getName());
+                    Slot everythingInConfigButInLore = actualMenuYML.getSlot(10);
+                    ItemStack itemStackToShowTheThing = new ItemStack(Material.PAPER);
+                    ItemMeta itemMetaToShowTheThing = itemStackToShowTheThing.getItemMeta();
+                    itemMetaToShowTheThing.setDisplayName(ChatColor.YELLOW+"Click to print config.yml in chat or to show config below ");
+                    List<String> list = new ArrayList<>();
+                    everythingInConfigButInLore.setClickHandler((playerSlotToPrintConfig , infoSlotToSeeConfig) ->
+                    {
+                        for (String s : plugin.getConfig().getKeys(true))
+                        {
+                            if(!plugin.getConfig().get(s).toString().contains("MemorySection"))
+                            {
+                                list.add(ChatColor.GRAY + s + ": " +plugin.getConfig().get(s).toString());
+                                playerSlotToSeeConfig.sendMessage(ChatColor.GRAY + s + ": " +plugin.getConfig().get(s).toString());
+                            }
+                        }
+                        itemMetaToShowTheThing.setLore(list);
+                        itemStackToShowTheThing.setItemMeta(itemMetaToShowTheThing);
+                        everythingInConfigButInLore.setItem(itemStackToShowTheThing);
+                        menuYML.addBorder(actualMenuYML);
+                        menuYML.displayMenu(playerSlotToSeeConfig, actualMenuYML);
+
+                    });
+
+                    itemMetaToShowTheThing.setLore(list);
+                    itemStackToShowTheThing.setItemMeta(itemMetaToShowTheThing);
+                    everythingInConfigButInLore.setItem(itemStackToShowTheThing);
+                    menuYML.addBorder(actualMenuYML);
+                    menuYML.displayMenu(playerSlotToSeeConfig, actualMenuYML);
+
+                });
+
+                slotForBack.setClickHandler(((player1, clickInformation) ->
                 {
                     mainMenu.displayMenu(player1 , menu);
                 }));
 
-
-                slot1.setClickHandler((playerThing2, info2) ->
+                slotPluginOptionsSubMenu.setClickHandler((playerThing2, info2) ->
                 {
                     if(isOn.get())
                     {
                         plugin.getPluginLoader().disablePlugin(plugin);
-                        slot1.setItem(woolOff);
+                        slotPluginOptionsSubMenu.setItem(woolOff);
                         isOn.set(false);
-                        pluginOptionsMenu.addBorder(menu1, isOn.get());
+                        pluginOptionsMenu.addBorder(pluginOptionSubMenu, isOn.get());
                         playerThing2.sendMessage(ChatColor.RED+"PluginManager: Disabled plugin " + plugin.getName());
 
                     }else
                     {
                         plugin.getPluginLoader().enablePlugin(plugin);
-                        slot1.setItem(woolOn);
+                        slotPluginOptionsSubMenu.setItem(woolOn);
                         isOn.set(true);
-                        pluginOptionsMenu.addBorder(menu1, isOn.get());
+                        pluginOptionsMenu.addBorder(pluginOptionSubMenu, isOn.get());
                         playerThing2.sendMessage(ChatColor.GREEN+"PluginManager: Enabled plugin " + plugin.getName());
                     }
-                    menu1.update();
+                    pluginOptionSubMenu.update();
                 });
             });
         }

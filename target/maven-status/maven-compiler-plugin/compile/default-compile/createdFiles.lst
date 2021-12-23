@@ -1,5 +1,6 @@
-me/kingdutchisbad/spigotmc/pluginmanagergui/MainMenu.class
+me/kingdutchisbad/spigotmc/pluginmanagergui/MenuYML.class
 me/kingdutchisbad/spigotmc/pluginmanagergui/PluginManagerGUI.class
+me/kingdutchisbad/spigotmc/pluginmanagergui/MainMenu.class
 me/kingdutchisbad/spigotmc/pluginmanagergui/InventoryTestClass.class
 me/kingdutchisbad/spigotmc/pluginmanagergui/GetPlugin.class
 me/kingdutchisbad/spigotmc/pluginmanagergui/PluginOptionsMenu.class
